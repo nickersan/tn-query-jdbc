@@ -23,12 +23,15 @@ import com.tn.query.QueryParseException;
 public class JdbcQueryParser extends AbstractQueryParser<JdbcPredicate>
 {
   private static final String COMMA = ", ";
+  private static final String LIKE_WILDCARD = "%";
   private static final String TEMPLATE_EQUAL = "%s = %s";
   private static final String TEMPLATE_NOT_EQUAL = "NOT %s = %s";
   private static final String TEMPLATE_GREATER_THAN = "%s > %s";
   private static final String TEMPLATE_GREATER_THAN_OR_EQUAL = "%s >= %s";
   private static final String TEMPLATE_LESS_THAN = "%s < %s";
   private static final String TEMPLATE_LESS_THAN_OR_EQUAL = "%s <= %s";
+  private static final String TEMPLATE_LIKE = "%s LIKE %s";
+  private static final String TEMPLATE_NOT_LIKE = "%s NOT LIKE %s";
   private static final String TEMPLATE_IN = "%s IN (%s)";
   private static final String TEMPLATE_AND = "%s AND %s";
   private static final String TEMPLATE_OR = "%s OR %s";
@@ -116,6 +119,28 @@ public class JdbcQueryParser extends AbstractQueryParser<JdbcPredicate>
   }
 
   @Override
+  protected JdbcPredicate like(String left, Object right)
+  {
+    return new JdbcComparison(
+      this.zoneOffset,
+      TEMPLATE_LIKE,
+      name(left),
+      replaceWildcard(right)
+    );
+  }
+
+  @Override
+  protected JdbcPredicate notLike(String left, Object right)
+  {
+    return new JdbcComparison(
+      this.zoneOffset,
+      TEMPLATE_NOT_LIKE,
+      name(left),
+      replaceWildcard(right)
+    );
+  }
+
+  @Override
   protected JdbcPredicate in(String left, List<?> right)
   {
     return new JdbcComparison(
@@ -151,6 +176,13 @@ public class JdbcQueryParser extends AbstractQueryParser<JdbcPredicate>
     if (name == null) throw new QueryParseException("Unknown name: " + left);
 
     return name;
+  }
+
+  private Object replaceWildcard(Object value)
+  {
+    checkLikeable(value);
+
+    return value.toString().replace(WILDCARD, LIKE_WILDCARD);
   }
 
   private static abstract class AbstractJdbcPredicate implements JdbcPredicate

@@ -5,6 +5,7 @@ import static java.time.Month.OCTOBER;
 import static java.time.Month.SEPTEMBER;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
@@ -22,6 +23,7 @@ import java.util.Map;
 import org.junit.jupiter.api.Test;
 
 import com.tn.query.Mapper;
+import com.tn.query.QueryException;
 import com.tn.query.QueryParser;
 
 class JdbcQueryParserTest
@@ -108,6 +110,10 @@ class JdbcQueryParserTest
         verify(preparedStatement).setBoolean(2, false);
       }
     );
+
+    assertThrows(QueryException.class, () -> this.queryParser.parse("booleanValue ≈ true"));
+
+    assertThrows(QueryException.class, () -> this.queryParser.parse("booleanValue !≈ false"));
   }
 
   @Test
@@ -157,6 +163,10 @@ class JdbcQueryParserTest
         verify(preparedStatement).setByte(2, (byte)2);
       }
     );
+
+    assertThrows(QueryException.class, () -> this.queryParser.parse("byteValue ≈ 1"));
+
+    assertThrows(QueryException.class, () -> this.queryParser.parse("byteValue !≈ 2"));
   }
 
   @Test
@@ -207,6 +217,10 @@ class JdbcQueryParserTest
         verify(preparedStatement).setString(3, "c");
       }
     );
+
+    assertThrows(QueryException.class, () -> this.queryParser.parse("charValue ≈ b"));
+
+    assertThrows(QueryException.class, () -> this.queryParser.parse("charValue !≈ c"));
   }
 
   @Test
@@ -262,6 +276,10 @@ class JdbcQueryParserTest
         verify(preparedStatement).setTimestamp(3, timestamp3);
       }
     );
+
+    assertThrows(QueryException.class, () -> this.queryParser.parse("dateValue ≈ 2022-10-26"));
+
+    assertThrows(QueryException.class, () -> this.queryParser.parse("dateValue !≈ 2022-10-25"));
   }
 
   @Test
@@ -317,6 +335,10 @@ class JdbcQueryParserTest
         verify(preparedStatement).setTimestamp(3, timestamp3);
       }
     );
+
+    assertThrows(QueryException.class, () -> this.queryParser.parse("dateValue ≈ 2022-10-26T11:16"));
+
+    assertThrows(QueryException.class, () -> this.queryParser.parse("dateValue !≈ 2022-10-25T11:15"));
   }
 
   @Test
@@ -372,6 +394,10 @@ class JdbcQueryParserTest
         verify(preparedStatement).setTimestamp(3, timestamp3);
       }
     );
+
+    assertThrows(QueryException.class, () -> this.queryParser.parse("dateValue ≈ 2022-10-26T11:16:17"));
+
+    assertThrows(QueryException.class, () -> this.queryParser.parse("dateValue !≈ 2022-10-25T11:15:16"));
   }
 
   @Test
@@ -427,6 +453,10 @@ class JdbcQueryParserTest
         verify(preparedStatement).setTimestamp(3, timestamp3);
       }
     );
+
+    assertThrows(QueryException.class, () -> this.queryParser.parse("dateValue ≈ 2022-10-26T11:16:17.18"));
+
+    assertThrows(QueryException.class, () -> this.queryParser.parse("dateValue !≈ 2022-10-25T11:15:16.17"));
   }
 
   @Test
@@ -476,6 +506,10 @@ class JdbcQueryParserTest
         verify(preparedStatement).setDouble(2, 2.3);
       }
     );
+
+    assertThrows(QueryException.class, () -> this.queryParser.parse("doubleValue ≈ 1.2"));
+
+    assertThrows(QueryException.class, () -> this.queryParser.parse("doubleValue !≈ 1.1"));
   }
 
   @Test
@@ -525,6 +559,10 @@ class JdbcQueryParserTest
         verify(preparedStatement).setFloat(2, 2.3f);
       }
     );
+
+    assertThrows(QueryException.class, () -> this.queryParser.parse("floatValue ≈ 1.2"));
+
+    assertThrows(QueryException.class, () -> this.queryParser.parse("floatValue !≈ 1.1"));
   }
 
   @Test
@@ -574,6 +612,10 @@ class JdbcQueryParserTest
         verify(preparedStatement).setInt(2, 2);
       }
     );
+
+    assertThrows(QueryException.class, () -> this.queryParser.parse("intValue ≈ 2"));
+
+    assertThrows(QueryException.class, () -> this.queryParser.parse("intValue !≈ 1"));
   }
 
   @Test
@@ -629,6 +671,10 @@ class JdbcQueryParserTest
         verify(preparedStatement).setDate(3, date3);
       }
     );
+
+    assertThrows(QueryException.class, () -> this.queryParser.parse("localDateValue ≈ 2022-10-26"));
+
+    assertThrows(QueryException.class, () -> this.queryParser.parse("localDateValue !≈ 2021-09-25"));
   }
 
   @Test
@@ -684,6 +730,10 @@ class JdbcQueryParserTest
         verify(preparedStatement).setTimestamp(3, timestamp3);
       }
     );
+
+    assertThrows(QueryException.class, () -> this.queryParser.parse("localDateValue ≈ 2022-10-26T11:16"));
+
+    assertThrows(QueryException.class, () -> this.queryParser.parse("localDateValue !≈ 2021-09-25T10:15"));
   }
 
   @Test
@@ -739,6 +789,10 @@ class JdbcQueryParserTest
         verify(preparedStatement).setTimestamp(3, timestamp3);
       }
     );
+
+    assertThrows(QueryException.class, () -> this.queryParser.parse("localDateValue ≈ 2022-10-26T11:16:17"));
+
+    assertThrows(QueryException.class, () -> this.queryParser.parse("localDateValue !≈ 2021-09-25T10:15:16"));
   }
 
   @Test
@@ -794,6 +848,10 @@ class JdbcQueryParserTest
         verify(preparedStatement).setTimestamp(3, timestamp3);
       }
     );
+
+    assertThrows(QueryException.class, () -> this.queryParser.parse("localDateValue ≈ 2022-10-26T11:16:17.18"));
+
+    assertThrows(QueryException.class, () -> this.queryParser.parse("localDateValue !≈ 2021-09-25T10:15:16.17"));
   }
 
   @Test
@@ -843,10 +901,14 @@ class JdbcQueryParserTest
         verify(preparedStatement).setLong(2, 2L);
       }
     );
+
+    assertThrows(QueryException.class, () -> this.queryParser.parse("longValue ≈ 2"));
+
+    assertThrows(QueryException.class, () -> this.queryParser.parse("longValue !≈ 1"));
   }
 
   @Test
-  void testParseShortEqual() throws Exception
+  void testParseShort() throws Exception
   {
     assertPredicate(
       this.queryParser.parse("shortValue = 1"),
@@ -892,10 +954,14 @@ class JdbcQueryParserTest
         verify(preparedStatement).setShort(2, (short)2);
       }
     );
+
+    assertThrows(QueryException.class, () -> this.queryParser.parse("shortValue ≈ 2"));
+
+    assertThrows(QueryException.class, () -> this.queryParser.parse("shortValue !≈ 1"));
   }
 
   @Test
-  void testParseStringEqual() throws Exception
+  void testParseString() throws Exception
   {
     assertPredicate(
       this.queryParser.parse("stringValue = ABC"),
@@ -931,6 +997,42 @@ class JdbcQueryParserTest
       this.queryParser.parse("stringValue <= ABC"),
       "string <= ?",
       preparedStatement -> verify(preparedStatement).setObject(1, "ABC")
+    );
+
+    assertPredicate(
+      this.queryParser.parse("stringValue ≈ ABC*"),
+      "string LIKE ?",
+      preparedStatement -> verify(preparedStatement).setObject(1, "ABC%")
+    );
+
+    assertPredicate(
+      this.queryParser.parse("stringValue ≈ *ABC"),
+      "string LIKE ?",
+      preparedStatement -> verify(preparedStatement).setObject(1, "%ABC")
+    );
+
+    assertPredicate(
+      this.queryParser.parse("stringValue ≈ *ABC*"),
+      "string LIKE ?",
+      preparedStatement -> verify(preparedStatement).setObject(1, "%ABC%")
+    );
+
+    assertPredicate(
+      this.queryParser.parse("stringValue !≈ ABC*"),
+      "string NOT LIKE ?",
+      preparedStatement -> verify(preparedStatement).setObject(1, "ABC%")
+    );
+
+    assertPredicate(
+      this.queryParser.parse("stringValue !≈ *ABC"),
+      "string NOT LIKE ?",
+      preparedStatement -> verify(preparedStatement).setObject(1, "%ABC")
+    );
+
+    assertPredicate(
+      this.queryParser.parse("stringValue !≈ *ABC*"),
+      "string NOT LIKE ?",
+      preparedStatement -> verify(preparedStatement).setObject(1, "%ABC%")
     );
 
     assertPredicate(
