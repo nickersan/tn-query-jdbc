@@ -731,9 +731,9 @@ class JdbcQueryParserTest
       }
     );
 
-    assertThrows(QueryException.class, () -> this.queryParser.parse("localDateValue ≈ 2022-10-26T11:16"));
+    assertThrows(QueryException.class, () -> this.queryParser.parse("localDateTimeValue ≈ 2022-10-26T11:16"));
 
-    assertThrows(QueryException.class, () -> this.queryParser.parse("localDateValue !≈ 2021-09-25T10:15"));
+    assertThrows(QueryException.class, () -> this.queryParser.parse("localDateTimeValue !≈ 2021-09-25T10:15"));
   }
 
   @Test
@@ -790,9 +790,9 @@ class JdbcQueryParserTest
       }
     );
 
-    assertThrows(QueryException.class, () -> this.queryParser.parse("localDateValue ≈ 2022-10-26T11:16:17"));
+    assertThrows(QueryException.class, () -> this.queryParser.parse("localDateTimeValue ≈ 2022-10-26T11:16:17"));
 
-    assertThrows(QueryException.class, () -> this.queryParser.parse("localDateValue !≈ 2021-09-25T10:15:16"));
+    assertThrows(QueryException.class, () -> this.queryParser.parse("localDateTimeValue !≈ 2021-09-25T10:15:16"));
   }
 
   @Test
@@ -849,9 +849,9 @@ class JdbcQueryParserTest
       }
     );
 
-    assertThrows(QueryException.class, () -> this.queryParser.parse("localDateValue ≈ 2022-10-26T11:16:17.18"));
+    assertThrows(QueryException.class, () -> this.queryParser.parse("localDateTimeValue ≈ 2022-10-26T11:16:17.18"));
 
-    assertThrows(QueryException.class, () -> this.queryParser.parse("localDateValue !≈ 2021-09-25T10:15:16.17"));
+    assertThrows(QueryException.class, () -> this.queryParser.parse("localDateTimeValue !≈ 2021-09-25T10:15:16.17"));
   }
 
   @Test
