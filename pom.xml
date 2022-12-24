@@ -14,6 +14,7 @@
     <version>0.0.1-SNAPSHOT</version>
   </parent>
 
+  <groupId>com.tn.query</groupId>
   <artifactId>tn-query-jdbc</artifactId>
   <version>0.0.1-SNAPSHOT</version>
 
