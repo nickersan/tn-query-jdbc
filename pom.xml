@@ -9,8 +9,8 @@
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <groupId>com.tn.query</groupId>
-    <artifactId>tn-query-parent</artifactId>
+    <groupId>com.tn</groupId>
+    <artifactId>tn-parent</artifactId>
     <version>0.0.1-SNAPSHOT</version>
   </parent>
 
