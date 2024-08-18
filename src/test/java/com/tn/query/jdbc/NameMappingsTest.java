@@ -10,7 +10,7 @@ import org.junit.jupiter.api.Test;
 public class NameMappingsTest
 {
   @Test
-  void testForFields()
+  void shouldGetFieldsFromClass()
   {
     assertEquals(
       Map.of("oneValue", "one_value", "twoValue", "two_value"),
@@ -19,7 +19,7 @@ public class NameMappingsTest
   }
 
   @Test
-  void testForFieldsWithIgnored()
+  void shouldGetFieldsFromClassExcludingIgnored()
   {
     assertEquals(
       Map.of("oneValue", "one_value"),
@@ -28,7 +28,7 @@ public class NameMappingsTest
   }
 
   @Test
-  void testForFieldsWithOverride()
+  void shouldGetFieldsFromClassWithOverride()
   {
     assertEquals(
       Map.of("oneValue", "uno_value", "twoValue", "two_value"),
@@ -37,7 +37,7 @@ public class NameMappingsTest
   }
 
   @Test
-  void testForFieldsWithIgnoredAndOverride()
+  void shouldGetFieldsFromClassExcludingIgnoredAndWithOverride()
   {
     assertEquals(
       Map.of("oneValue", "uno_value"),

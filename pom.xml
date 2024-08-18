@@ -11,12 +11,13 @@
   <parent>
     <groupId>com.tn</groupId>
     <artifactId>tn-parent</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>0.0.01-SNAPSHOT</version>
+    <relativePath/>
   </parent>
 
   <groupId>com.tn.query</groupId>
   <artifactId>tn-query-jdbc</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
+  <version>0.0.01-SNAPSHOT</version>
 
   <packaging>jar</packaging>
 
@@ -27,31 +28,17 @@
     <dependency>
       <groupId>com.tn.query</groupId>
       <artifactId>tn-query</artifactId>
-      <version>0.0.1-SNAPSHOT</version>
+      <version>0.0.01-SNAPSHOT</version>
     </dependency>
 
     <!-- 3rd party -->
 
     <dependency>
-      <groupId>org.mockito</groupId>
-      <artifactId>mockito-core</artifactId>
+      <groupId>com.h2database</groupId>
+      <artifactId>h2</artifactId>
+      <scope>test</scope>
     </dependency>
 
   </dependencies>
-
-  <repositories>
-    <repository>
-      <id>github</id>
-      <url>https://maven.pkg.github.com/nickersan/maven-repository</url>
-      <releases>
-        <enabled>true</enabled>
-        <updatePolicy>always</updatePolicy>
-      </releases>
-      <snapshots>
-        <enabled>true</enabled>
-        <updatePolicy>never</updatePolicy>
-      </snapshots>
-    </repository>
-  </repositories>
 
  </project>
