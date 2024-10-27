@@ -16,16 +16,18 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.IntSupplier;
 
-import com.tn.query.AbstractQueryParser;
-import com.tn.query.Mapper;
+import com.tn.query.PredicateFactory;
+import com.tn.query.QueryException;
 import com.tn.query.QueryParseException;
 
-public class JdbcQueryParser extends AbstractQueryParser<JdbcPredicate>
+public class JdbcPredicateFactory implements PredicateFactory<JdbcPredicate>
 {
   private static final String COMMA = ", ";
   private static final String LIKE_WILDCARD = "%";
   private static final String TEMPLATE_EQUAL = "%s = %s";
   private static final String TEMPLATE_NOT_EQUAL = "NOT %s = %s";
+  private static final String TEMPLATE_NULL = "%s IS NULL";
+  private static final String TEMPLATE_NOT_NULL = "%s IS NOT NULL";
   private static final String TEMPLATE_GREATER_THAN = "%s > %s";
   private static final String TEMPLATE_GREATER_THAN_OR_EQUAL = "%s >= %s";
   private static final String TEMPLATE_LESS_THAN = "%s < %s";
@@ -35,47 +37,48 @@ public class JdbcQueryParser extends AbstractQueryParser<JdbcPredicate>
   private static final String TEMPLATE_IN = "%s IN (%s)";
   private static final String TEMPLATE_AND = "%s AND %s";
   private static final String TEMPLATE_OR = "%s OR %s";
+  private static final String WILDCARD = "*";
 
   private final Map<String, String> nameMappings;
 
   private ZoneOffset zoneOffset;
 
-  public JdbcQueryParser(Map<String, String> nameMappings, Collection<Mapper> valueMappers)
+  public JdbcPredicateFactory(Map<String, String> nameMappings)
   {
-    super(valueMappers);
     this.nameMappings = nameMappings;
     this.zoneOffset = ZoneOffset.UTC;
   }
 
-  public void setZoneOffset(ZoneOffset zoneOffset)
+  public JdbcPredicateFactory withZoneOffset(ZoneOffset zoneOffset)
   {
     this.zoneOffset = zoneOffset;
+    return this;
   }
 
   @Override
-  protected JdbcPredicate equal(String left, Object right)
+  public JdbcPredicate equal(String left, Object right)
   {
     return new JdbcComparison(
       this.zoneOffset,
-      TEMPLATE_EQUAL,
+      right != null ? TEMPLATE_EQUAL : TEMPLATE_NULL,
       name(left),
       right
     );
   }
 
   @Override
-  protected JdbcPredicate notEqual(String left, Object right)
+  public JdbcPredicate notEqual(String left, Object right)
   {
     return new JdbcComparison(
       this.zoneOffset,
-      TEMPLATE_NOT_EQUAL,
+      right != null ? TEMPLATE_NOT_EQUAL : TEMPLATE_NOT_NULL,
       name(left),
       right
     );
   }
 
   @Override
-  protected JdbcPredicate greaterThan(String left, Object right)
+  public JdbcPredicate greaterThan(String left, Object right)
   {
     return new JdbcComparison(
       this.zoneOffset,
@@ -86,7 +89,7 @@ public class JdbcQueryParser extends AbstractQueryParser<JdbcPredicate>
   }
 
   @Override
-  protected JdbcPredicate greaterThanOrEqual(String left, Object right)
+  public JdbcPredicate greaterThanOrEqual(String left, Object right)
   {
     return new JdbcComparison(
       this.zoneOffset,
@@ -97,7 +100,7 @@ public class JdbcQueryParser extends AbstractQueryParser<JdbcPredicate>
   }
 
   @Override
-  protected JdbcPredicate lessThan(String left, Object right)
+  public JdbcPredicate lessThan(String left, Object right)
   {
     return new JdbcComparison(
       this.zoneOffset,
@@ -108,7 +111,7 @@ public class JdbcQueryParser extends AbstractQueryParser<JdbcPredicate>
   }
 
   @Override
-  protected JdbcPredicate lessThanOrEqual(String left, Object right)
+  public JdbcPredicate lessThanOrEqual(String left, Object right)
   {
     return new JdbcComparison(
       this.zoneOffset,
@@ -119,7 +122,7 @@ public class JdbcQueryParser extends AbstractQueryParser<JdbcPredicate>
   }
 
   @Override
-  protected JdbcPredicate like(String left, Object right)
+  public JdbcPredicate like(String left, Object right)
   {
     return new JdbcComparison(
       this.zoneOffset,
@@ -130,7 +133,7 @@ public class JdbcQueryParser extends AbstractQueryParser<JdbcPredicate>
   }
 
   @Override
-  protected JdbcPredicate notLike(String left, Object right)
+  public JdbcPredicate notLike(String left, Object right)
   {
     return new JdbcComparison(
       this.zoneOffset,
@@ -141,7 +144,7 @@ public class JdbcQueryParser extends AbstractQueryParser<JdbcPredicate>
   }
 
   @Override
-  protected JdbcPredicate in(String left, List<?> right)
+  public JdbcPredicate in(String left, List<?> right)
   {
     return new JdbcComparison(
       this.zoneOffset,
@@ -152,19 +155,19 @@ public class JdbcQueryParser extends AbstractQueryParser<JdbcPredicate>
   }
 
   @Override
-  protected JdbcPredicate and(JdbcPredicate left, JdbcPredicate right)
+  public JdbcPredicate and(JdbcPredicate left, JdbcPredicate right)
   {
     return new JdbcLogical(TEMPLATE_AND, left, right);
   }
 
   @Override
-  protected JdbcPredicate or(JdbcPredicate left, JdbcPredicate right)
+  public JdbcPredicate or(JdbcPredicate left, JdbcPredicate right)
   {
     return new JdbcLogical(TEMPLATE_OR, left, right);
   }
 
   @Override
-  protected JdbcPredicate parenthesis(JdbcPredicate predicate)
+  public JdbcPredicate parenthesis(JdbcPredicate predicate)
   {
     if (!(predicate instanceof AbstractJdbcPredicate)) throw new QueryParseException("Expected AbstractJdbcPredicate");
     else return new JdbcParenthesis((AbstractJdbcPredicate)predicate);
@@ -180,7 +183,7 @@ public class JdbcQueryParser extends AbstractQueryParser<JdbcPredicate>
 
   private Object replaceWildcard(Object value)
   {
-    checkLikeable(value);
+    if (!(value instanceof String)) throw new QueryException("Like comparisons only work for string values, received: " + value);
 
     return value.toString().replace(WILDCARD, LIKE_WILDCARD);
   }
@@ -257,7 +260,7 @@ public class JdbcQueryParser extends AbstractQueryParser<JdbcPredicate>
         else if (value instanceof Long) preparedStatement.setLong(index.getAsInt(), (Long)value);
         else if (value instanceof Short) preparedStatement.setShort(index.getAsInt(), (Short)value);
         else if (value instanceof Collection) ((Collection<?>)value).forEach(v -> setValue(preparedStatement, index, v));
-        else preparedStatement.setObject(index.getAsInt(), value);
+        else if (value != null) preparedStatement.setObject(index.getAsInt(), value);
       }
       catch (SQLException e)
       {
@@ -272,7 +275,7 @@ public class JdbcQueryParser extends AbstractQueryParser<JdbcPredicate>
 
     private String valueStr()
     {
-      return this.value instanceof Collection ? ((Collection<?>)value).stream().map(Object::toString).collect(joining(COMMA)) : VALUE_PLACEHOLDER;
+      return this.value instanceof Collection ? ((Collection<?>)value).stream().map(Object::toString).collect(joining(COMMA)) : String.valueOf(this.value);
     }
 
     private java.sql.Date toDate(LocalDate value)
