@@ -26,6 +26,12 @@
     <!-- tn-query -->
 
     <dependency>
+      <groupId>com.tn</groupId>
+      <artifactId>tn-lang</artifactId>
+      <version>0.0.01-SNAPSHOT</version>
+    </dependency>
+
+    <dependency>
       <groupId>com.tn.query</groupId>
       <artifactId>tn-query</artifactId>
       <version>0.0.01-SNAPSHOT</version>

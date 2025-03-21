@@ -46,7 +46,7 @@ class JdbcPredicateFactoryTest
     FIELD_MAPPINGS.put("stringValue", "string");
   }
 
-  private final PredicateFactory<JdbcPredicate> predicateFactory = new JdbcPredicateFactory(FIELD_MAPPINGS).withZoneOffset(ZoneOffset.UTC);
+  private final PredicateFactory<JdbcPredicate> predicateFactory = new JdbcPredicateFactory(FIELD_MAPPINGS);
 
   @Test
   void shouldMatchBoolean() throws Exception
@@ -472,7 +472,7 @@ class JdbcPredicateFactoryTest
   void shouldMatchLocalDate() throws Exception
   {
     LocalDate localDate = LocalDate.of(2023, OCTOBER, 10);
-    Date date = new Date(localDate.atStartOfDay(ZoneOffset.UTC).toInstant().toEpochMilli());
+    Date date = Date.valueOf(localDate);
 
     assertPredicate(
       this.predicateFactory.equal("localDateValue", localDate),
@@ -541,7 +541,7 @@ class JdbcPredicateFactoryTest
   void shouldMatchLocalDateTime() throws Exception
   {
     LocalDateTime localDateTime = LocalDateTime.now();
-    Timestamp timestamp = new Timestamp(localDateTime.toInstant(ZoneOffset.UTC).toEpochMilli());
+    Timestamp timestamp = Timestamp.valueOf(localDateTime);
 
     assertPredicate(
       this.predicateFactory.equal("localDateValue", localDateTime),
@@ -586,10 +586,10 @@ class JdbcPredicateFactoryTest
     );
 
     LocalDateTime localDateTime2 = localDateTime.plusHours(1);
-    Timestamp timestamp2 = new Timestamp(localDateTime2.toInstant(ZoneOffset.UTC).toEpochMilli());
+    Timestamp timestamp2 = Timestamp.valueOf(localDateTime2);
 
     LocalDateTime localDateTime3 = localDateTime.plusHours(2);
-    Timestamp timestamp3 = new Timestamp(localDateTime3.toInstant(ZoneOffset.UTC).toEpochMilli());
+    Timestamp timestamp3 = Timestamp.valueOf(localDateTime3);
 
     assertPredicate(
       this.predicateFactory.in("localDateValue", List.of(localDateTime, localDateTime2, localDateTime3)),
@@ -731,84 +731,84 @@ class JdbcPredicateFactoryTest
       this.predicateFactory.equal("stringValue", "ABC"),
       "string = ABC",
       "string = ?",
-      preparedStatement -> verify(preparedStatement).setObject(1, "ABC")
+      preparedStatement -> verify(preparedStatement).setString(1, "ABC")
     );
 
     assertPredicate(
       this.predicateFactory.notEqual("stringValue", "ABC"),
       "NOT string = ABC",
       "NOT string = ?",
-      preparedStatement -> verify(preparedStatement).setObject(1, "ABC")
+      preparedStatement -> verify(preparedStatement).setString(1, "ABC")
     );
 
     assertPredicate(
       this.predicateFactory.greaterThan("stringValue", "ABC"),
       "string > ABC",
       "string > ?",
-      preparedStatement -> verify(preparedStatement).setObject(1, "ABC")
+      preparedStatement -> verify(preparedStatement).setString(1, "ABC")
     );
 
     assertPredicate(
       this.predicateFactory.greaterThanOrEqual("stringValue", "ABC"),
       "string >= ABC",
       "string >= ?",
-      preparedStatement -> verify(preparedStatement).setObject(1, "ABC")
+      preparedStatement -> verify(preparedStatement).setString(1, "ABC")
     );
 
     assertPredicate(
       this.predicateFactory.lessThan("stringValue", "ABC"),
       "string < ABC",
       "string < ?",
-      preparedStatement -> verify(preparedStatement).setObject(1, "ABC")
+      preparedStatement -> verify(preparedStatement).setString(1, "ABC")
     );
 
     assertPredicate(
       this.predicateFactory.lessThanOrEqual("stringValue", "ABC"),
       "string <= ABC",
       "string <= ?",
-      preparedStatement -> verify(preparedStatement).setObject(1, "ABC")
+      preparedStatement -> verify(preparedStatement).setString(1, "ABC")
     );
 
     assertPredicate(
       this.predicateFactory.like("stringValue", "ABC*"),
       "string LIKE ABC%",
       "string LIKE ?",
-      preparedStatement -> verify(preparedStatement).setObject(1, "ABC%")
+      preparedStatement -> verify(preparedStatement).setString(1, "ABC%")
     );
 
     assertPredicate(
       this.predicateFactory.like("stringValue", "*ABC"),
       "string LIKE %ABC",
       "string LIKE ?",
-      preparedStatement -> verify(preparedStatement).setObject(1, "%ABC")
+      preparedStatement -> verify(preparedStatement).setString(1, "%ABC")
     );
 
     assertPredicate(
       this.predicateFactory.like("stringValue", "*ABC*"),
       "string LIKE %ABC%",
       "string LIKE ?",
-      preparedStatement -> verify(preparedStatement).setObject(1, "%ABC%")
+      preparedStatement -> verify(preparedStatement).setString(1, "%ABC%")
     );
 
     assertPredicate(
       this.predicateFactory.notLike("stringValue", "ABC*"),
       "string NOT LIKE ABC%",
       "string NOT LIKE ?",
-      preparedStatement -> verify(preparedStatement).setObject(1, "ABC%")
+      preparedStatement -> verify(preparedStatement).setString(1, "ABC%")
     );
 
     assertPredicate(
       this.predicateFactory.notLike("stringValue", "*ABC"),
       "string NOT LIKE %ABC",
       "string NOT LIKE ?",
-      preparedStatement -> verify(preparedStatement).setObject(1, "%ABC")
+      preparedStatement -> verify(preparedStatement).setString(1, "%ABC")
     );
 
     assertPredicate(
       this.predicateFactory.notLike("stringValue", "*ABC*"),
       "string NOT LIKE %ABC%",
       "string NOT LIKE ?",
-      preparedStatement -> verify(preparedStatement).setObject(1, "%ABC%")
+      preparedStatement -> verify(preparedStatement).setString(1, "%ABC%")
     );
 
     assertPredicate(
@@ -816,8 +816,8 @@ class JdbcPredicateFactoryTest
       "string IN (ABC, DEF)",
       "string IN (?, ?)",
       preparedStatement -> {
-        verify(preparedStatement).setObject(1, "ABC");
-        verify(preparedStatement).setObject(2, "DEF");
+        verify(preparedStatement).setString(1, "ABC");
+        verify(preparedStatement).setString(2, "DEF");
       }
     );
   }
@@ -833,7 +833,7 @@ class JdbcPredicateFactoryTest
       "string = Testing AND int = 123",
       "string = ? AND int = ?",
       preparedStatement -> {
-        verify(preparedStatement).setObject(1, "Testing");
+        verify(preparedStatement).setString(1, "Testing");
         verify(preparedStatement).setInt(2, 123);
       }
     );
@@ -850,7 +850,7 @@ class JdbcPredicateFactoryTest
       "string = Testing OR int = 123",
       "string = ? OR int = ?",
       preparedStatement -> {
-        verify(preparedStatement).setObject(1, "Testing");
+        verify(preparedStatement).setString(1, "Testing");
         verify(preparedStatement).setInt(2, 123);
       }
     );
@@ -877,8 +877,8 @@ class JdbcPredicateFactoryTest
       "string = A AND (NOT string = B OR (int > 1 AND int <= 10))",
       "string = ? AND (NOT string = ? OR (int > ? AND int <= ?))",
       preparedStatement -> {
-        verify(preparedStatement).setObject(1, "A");
-        verify(preparedStatement).setObject(2, "B");
+        verify(preparedStatement).setString(1, "A");
+        verify(preparedStatement).setString(2, "B");
         verify(preparedStatement).setInt(3, 1);
         verify(preparedStatement).setInt(4, 10);
       }
