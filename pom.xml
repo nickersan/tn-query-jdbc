@@ -11,12 +11,13 @@
   <parent>
     <groupId>com.tn</groupId>
     <artifactId>tn-parent</artifactId>
-    <version>0.0.1-SNAPSHOT</version>
+    <version>1.0.1</version>
+    <relativePath/>
   </parent>
 
   <groupId>com.tn.query</groupId>
   <artifactId>tn-query-jdbc</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
+  <version>1.0.0-SNAPSHOT</version>
 
   <packaging>jar</packaging>
 
@@ -25,16 +26,21 @@
     <!-- tn-query -->
 
     <dependency>
+      <groupId>com.tn</groupId>
+      <artifactId>tn-lang</artifactId>
+    </dependency>
+
+    <dependency>
       <groupId>com.tn.query</groupId>
       <artifactId>tn-query</artifactId>
-      <version>0.0.1-SNAPSHOT</version>
     </dependency>
 
     <!-- 3rd party -->
 
     <dependency>
-      <groupId>org.mockito</groupId>
-      <artifactId>mockito-core</artifactId>
+      <groupId>com.h2database</groupId>
+      <artifactId>h2</artifactId>
+      <scope>test</scope>
     </dependency>
 
   </dependencies>

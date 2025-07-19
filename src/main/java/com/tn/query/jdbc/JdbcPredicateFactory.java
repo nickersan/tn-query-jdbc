@@ -5,27 +5,25 @@ import static java.util.stream.Collectors.joining;
 
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
-import java.sql.Timestamp;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.time.ZoneOffset;
 import java.util.Collection;
-import java.util.Date;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.IntSupplier;
 
-import com.tn.query.AbstractQueryParser;
-import com.tn.query.Mapper;
+import com.tn.lang.sql.PreparedStatements;
+import com.tn.query.PredicateFactory;
+import com.tn.query.QueryException;
 import com.tn.query.QueryParseException;
 
-public class JdbcQueryParser extends AbstractQueryParser<JdbcPredicate>
+public class JdbcPredicateFactory implements PredicateFactory<JdbcPredicate>
 {
   private static final String COMMA = ", ";
   private static final String LIKE_WILDCARD = "%";
   private static final String TEMPLATE_EQUAL = "%s = %s";
   private static final String TEMPLATE_NOT_EQUAL = "NOT %s = %s";
+  private static final String TEMPLATE_NULL = "%s IS NULL";
+  private static final String TEMPLATE_NOT_NULL = "%s IS NOT NULL";
   private static final String TEMPLATE_GREATER_THAN = "%s > %s";
   private static final String TEMPLATE_GREATER_THAN_OR_EQUAL = "%s >= %s";
   private static final String TEMPLATE_LESS_THAN = "%s < %s";
@@ -35,50 +33,39 @@ public class JdbcQueryParser extends AbstractQueryParser<JdbcPredicate>
   private static final String TEMPLATE_IN = "%s IN (%s)";
   private static final String TEMPLATE_AND = "%s AND %s";
   private static final String TEMPLATE_OR = "%s OR %s";
+  private static final String WILDCARD = "*";
 
   private final Map<String, String> nameMappings;
 
-  private ZoneOffset zoneOffset;
-
-  public JdbcQueryParser(Map<String, String> nameMappings, Collection<Mapper> valueMappers)
+  public JdbcPredicateFactory(Map<String, String> nameMappings)
   {
-    super(valueMappers);
     this.nameMappings = nameMappings;
-    this.zoneOffset = ZoneOffset.UTC;
-  }
-
-  public void setZoneOffset(ZoneOffset zoneOffset)
-  {
-    this.zoneOffset = zoneOffset;
   }
 
   @Override
-  protected JdbcPredicate equal(String left, Object right)
+  public JdbcPredicate equal(String left, Object right)
   {
     return new JdbcComparison(
-      this.zoneOffset,
-      TEMPLATE_EQUAL,
+      right != null ? TEMPLATE_EQUAL : TEMPLATE_NULL,
       name(left),
       right
     );
   }
 
   @Override
-  protected JdbcPredicate notEqual(String left, Object right)
+  public JdbcPredicate notEqual(String left, Object right)
   {
     return new JdbcComparison(
-      this.zoneOffset,
-      TEMPLATE_NOT_EQUAL,
+      right != null ? TEMPLATE_NOT_EQUAL : TEMPLATE_NOT_NULL,
       name(left),
       right
     );
   }
 
   @Override
-  protected JdbcPredicate greaterThan(String left, Object right)
+  public JdbcPredicate greaterThan(String left, Object right)
   {
     return new JdbcComparison(
-      this.zoneOffset,
       TEMPLATE_GREATER_THAN,
       name(left),
       right
@@ -86,10 +73,9 @@ public class JdbcQueryParser extends AbstractQueryParser<JdbcPredicate>
   }
 
   @Override
-  protected JdbcPredicate greaterThanOrEqual(String left, Object right)
+  public JdbcPredicate greaterThanOrEqual(String left, Object right)
   {
     return new JdbcComparison(
-      this.zoneOffset,
       TEMPLATE_GREATER_THAN_OR_EQUAL,
       name(left),
       right
@@ -97,10 +83,9 @@ public class JdbcQueryParser extends AbstractQueryParser<JdbcPredicate>
   }
 
   @Override
-  protected JdbcPredicate lessThan(String left, Object right)
+  public JdbcPredicate lessThan(String left, Object right)
   {
     return new JdbcComparison(
-      this.zoneOffset,
       TEMPLATE_LESS_THAN,
       name(left),
       right
@@ -108,10 +93,9 @@ public class JdbcQueryParser extends AbstractQueryParser<JdbcPredicate>
   }
 
   @Override
-  protected JdbcPredicate lessThanOrEqual(String left, Object right)
+  public JdbcPredicate lessThanOrEqual(String left, Object right)
   {
     return new JdbcComparison(
-      this.zoneOffset,
       TEMPLATE_LESS_THAN_OR_EQUAL,
       name(left),
       right
@@ -119,10 +103,9 @@ public class JdbcQueryParser extends AbstractQueryParser<JdbcPredicate>
   }
 
   @Override
-  protected JdbcPredicate like(String left, Object right)
+  public JdbcPredicate like(String left, Object right)
   {
     return new JdbcComparison(
-      this.zoneOffset,
       TEMPLATE_LIKE,
       name(left),
       replaceWildcard(right)
@@ -130,10 +113,9 @@ public class JdbcQueryParser extends AbstractQueryParser<JdbcPredicate>
   }
 
   @Override
-  protected JdbcPredicate notLike(String left, Object right)
+  public JdbcPredicate notLike(String left, Object right)
   {
     return new JdbcComparison(
-      this.zoneOffset,
       TEMPLATE_NOT_LIKE,
       name(left),
       replaceWildcard(right)
@@ -141,10 +123,9 @@ public class JdbcQueryParser extends AbstractQueryParser<JdbcPredicate>
   }
 
   @Override
-  protected JdbcPredicate in(String left, List<?> right)
+  public JdbcPredicate in(String left, List<?> right)
   {
     return new JdbcComparison(
-      this.zoneOffset,
       TEMPLATE_IN,
       name(left),
       right
@@ -152,19 +133,19 @@ public class JdbcQueryParser extends AbstractQueryParser<JdbcPredicate>
   }
 
   @Override
-  protected JdbcPredicate and(JdbcPredicate left, JdbcPredicate right)
+  public JdbcPredicate and(JdbcPredicate left, JdbcPredicate right)
   {
     return new JdbcLogical(TEMPLATE_AND, left, right);
   }
 
   @Override
-  protected JdbcPredicate or(JdbcPredicate left, JdbcPredicate right)
+  public JdbcPredicate or(JdbcPredicate left, JdbcPredicate right)
   {
     return new JdbcLogical(TEMPLATE_OR, left, right);
   }
 
   @Override
-  protected JdbcPredicate parenthesis(JdbcPredicate predicate)
+  public JdbcPredicate parenthesis(JdbcPredicate predicate)
   {
     if (!(predicate instanceof AbstractJdbcPredicate)) throw new QueryParseException("Expected AbstractJdbcPredicate");
     else return new JdbcParenthesis((AbstractJdbcPredicate)predicate);
@@ -180,7 +161,7 @@ public class JdbcQueryParser extends AbstractQueryParser<JdbcPredicate>
 
   private Object replaceWildcard(Object value)
   {
-    checkLikeable(value);
+    if (!(value instanceof String)) throw new QueryException("Like comparisons only work for string values, received: " + value);
 
     return value.toString().replace(WILDCARD, LIKE_WILDCARD);
   }
@@ -205,11 +186,9 @@ public class JdbcQueryParser extends AbstractQueryParser<JdbcPredicate>
     private final String name;
     private final String template;
     private final Object value;
-    private final ZoneOffset zoneOffset;
 
-    public JdbcComparison(ZoneOffset zoneOffset, String template, String name, Object value)
+    public JdbcComparison(String template, String name, Object value)
     {
-      this.zoneOffset = zoneOffset;
       this.name = name;
       this.value = value;
       this.template = template;
@@ -218,15 +197,7 @@ public class JdbcQueryParser extends AbstractQueryParser<JdbcPredicate>
     @Override
     protected void setValues(PreparedStatement preparedStatement, IntSupplier index) throws SQLException
     {
-      try
-      {
-        setValue(preparedStatement, index, this.value);
-      }
-      catch (RuntimeException e)
-      {
-        if (e.getCause() instanceof SQLException) throw (SQLException)e.getCause();
-        throw e;
-      }
+      PreparedStatements.setValue(preparedStatement, index, this.value);
     }
 
     @Override
@@ -241,30 +212,6 @@ public class JdbcQueryParser extends AbstractQueryParser<JdbcPredicate>
       return format(this.template, this.name, valueStr());
     }
 
-    private void setValue(PreparedStatement preparedStatement, IntSupplier index, Object value)
-    {
-      try
-      {
-        if (value instanceof Boolean) preparedStatement.setBoolean(index.getAsInt(), (Boolean)value);
-        else if (value instanceof Byte) preparedStatement.setByte(index.getAsInt(), (Byte)value);
-        else if (value instanceof Character) preparedStatement.setString(index.getAsInt(), ((Character)value).toString());
-        else if (value instanceof Date) preparedStatement.setTimestamp(index.getAsInt(), toTimestamp((Date)value));
-        else if (value instanceof Double) preparedStatement.setDouble(index.getAsInt(), (Double)value);
-        else if (value instanceof Float) preparedStatement.setFloat(index.getAsInt(), (Float)value);
-        else if (value instanceof Integer) preparedStatement.setInt(index.getAsInt(), (Integer)value);
-        else if (value instanceof LocalDate) preparedStatement.setDate(index.getAsInt(), toDate((LocalDate)value));
-        else if (value instanceof LocalDateTime) preparedStatement.setTimestamp(index.getAsInt(), toTimestamp((LocalDateTime)value));
-        else if (value instanceof Long) preparedStatement.setLong(index.getAsInt(), (Long)value);
-        else if (value instanceof Short) preparedStatement.setShort(index.getAsInt(), (Short)value);
-        else if (value instanceof Collection) ((Collection<?>)value).forEach(v -> setValue(preparedStatement, index, v));
-        else preparedStatement.setObject(index.getAsInt(), value);
-      }
-      catch (SQLException e)
-      {
-        throw new RuntimeException(e);
-      }
-    }
-
     private String placeholder()
     {
       return this.value instanceof Collection ? ((Collection<?>)value).stream().map(v -> VALUE_PLACEHOLDER).collect(joining(COMMA)) : VALUE_PLACEHOLDER;
@@ -272,22 +219,7 @@ public class JdbcQueryParser extends AbstractQueryParser<JdbcPredicate>
 
     private String valueStr()
     {
-      return this.value instanceof Collection ? ((Collection<?>)value).stream().map(Object::toString).collect(joining(COMMA)) : VALUE_PLACEHOLDER;
-    }
-
-    private java.sql.Date toDate(LocalDate value)
-    {
-      return new java.sql.Date(value.atStartOfDay(this.zoneOffset).toInstant().toEpochMilli());
-    }
-
-    private Timestamp toTimestamp(Date value)
-    {
-      return new Timestamp(value.getTime());
-    }
-
-    private Timestamp toTimestamp(LocalDateTime value)
-    {
-      return new Timestamp(value.toInstant(this.zoneOffset).toEpochMilli());
+      return this.value instanceof Collection ? ((Collection<?>)value).stream().map(Object::toString).collect(joining(COMMA)) : String.valueOf(this.value);
     }
   }
 

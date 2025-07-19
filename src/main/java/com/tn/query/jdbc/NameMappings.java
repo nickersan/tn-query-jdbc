@@ -15,7 +15,6 @@ import java.util.stream.Stream;
 
 public class NameMappings
 {
-  private static final String JACOCO_FIELD = "$jacocoData";
   private static final String UNDERSCORE = "_";
 
   private NameMappings() {}
@@ -66,8 +65,9 @@ public class NameMappings
   private static Collection<String> fieldNames(Class<?> subject, Collection<String> ignored)
   {
     return Stream.of(subject.getDeclaredFields())
+      .filter(field -> !field.isSynthetic())
       .map(Field::getName)
-      .filter(fieldName -> !JACOCO_FIELD.equals(fieldName) && !ignored.contains(fieldName))
+      .filter(fieldName -> !ignored.contains(fieldName))
       .collect(toUnmodifiableSet());
   }
 }
