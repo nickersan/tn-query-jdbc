@@ -7,7 +7,7 @@
   <parent>
     <groupId>com.tn</groupId>
     <artifactId>tn-parent</artifactId>
-    <version>1.0.1</version>
+    <version>4.0.2</version>
     <relativePath/>
   </parent>
 
@@ -17,6 +17,13 @@
 
   <packaging>jar</packaging>
 
+  <properties>
+
+    <tn-lang.version>1.3.4</tn-lang.version>
+    <tn-query.version>1.0.0</tn-query.version>
+
+  </properties>
+
   <dependencies>
 
     <!-- tn-query -->
@@ -24,11 +31,13 @@
     <dependency>
       <groupId>com.tn</groupId>
       <artifactId>tn-lang</artifactId>
+      <version>${tn-lang.version}</version>
     </dependency>
 
     <dependency>
       <groupId>com.tn.query</groupId>
       <artifactId>tn-query</artifactId>
+      <version>${tn-query.version}</version>
     </dependency>
 
     <!-- 3rd party -->
